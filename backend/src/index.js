@@ -12,10 +12,28 @@ const app = express();
 app.set('trust proxy', 1);
 
 // Security & Middlewares
-app.use(cors({
-  origin: process.env.CLIENT_URL || '*',
-  credentials: true
-}));
+// Supports one or multiple frontend URLs via CLIENT_URL (comma separated).
+const allowedOrigins = (process.env.CLIENT_URL || '')
+  .split(',')
+  .map((value) => value.trim())
+  .filter(Boolean);
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow non-browser requests (health checks, curl, server-to-server)
+      if (!origin) return callback(null, true);
+
+      // If CLIENT_URL is not set, allow all origins (safer fallback than '*' + credentials)
+      if (allowedOrigins.length === 0) return callback(null, true);
+
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+
+      return callback(new Error('CORS blocked: origin not allowed'));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Main Rate Limiter: 100 requests per 15 minutes

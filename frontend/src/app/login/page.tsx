@@ -21,8 +21,9 @@ export default function LoginPage() {
     try {
       await axios.post(`${API_URL}/auth/request-otp`, { phone });
       setOtpSent(true);
-    } catch (err) {
-      alert("Error sending OTP");
+    } catch (err: any) {
+      const serverMessage = err?.response?.data?.error;
+      alert(serverMessage || "Error sending OTP. Check backend URL and CORS settings.");
     } finally {
       setLoading(false);
     }
