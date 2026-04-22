@@ -53,6 +53,23 @@ app.get('/', (req, res) => {
   res.json({ status: "ok", message: "Vyapar AI Backend is running" });
 });
 
+// Body parser for passport
+app.use(express.urlencoded({ extended: true }));
+
+// Session for passport
+const session = require('express-session');
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'keyboard cat',
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // true for https
+}));
+
+// Passport
+const passport = require('passport');
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Routes
 app.use('/api/auth', require('./routes/auth'));
 app.use('/api/inventory', require('./routes/inventory'));
